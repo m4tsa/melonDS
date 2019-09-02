@@ -287,6 +287,10 @@ bool Init()
 void DeInit()
 {
     if (Renderer == 0) SoftRenderer::DeInit();
+#ifdef HAVE_OPENGL
+    else               GLRenderer::DeInit();
+#endif
+    if (Renderer == 0) SoftRenderer::DeInit();
     else               GLRenderer::DeInit();
 
     delete CmdFIFO;
@@ -386,6 +390,11 @@ void Reset()
     FlushRequest = 0;
     FlushAttributes = 0;
 
+    ResetRenderingState();
+    if (Renderer == 0) SoftRenderer::Reset();
+#ifdef HAVE_OPENGL
+    else               GLRenderer::Reset();
+#endif
     ResetRenderingState();
     if (Renderer == 0) SoftRenderer::Reset();
     else               GLRenderer::Reset();
@@ -620,11 +629,13 @@ int InitRenderer(bool hasGL)
 {
     int renderer = hasGL ? Config::_3DRenderer : 0;
 
+#ifdef HAVE_OPENGL
     if (renderer == 1)
     {
         if (!GLRenderer::Init())
             renderer = 0;
     }
+#endif
 
     if (renderer == 0) SoftRenderer::Init();
 
@@ -637,7 +648,9 @@ int InitRenderer(bool hasGL)
 void DeInitRenderer()
 {
     if (Renderer == 0) SoftRenderer::DeInit();
+#ifdef HAVE_OPENGL
     else               GLRenderer::DeInit();
+#endif
 }
 
 void UpdateRendererConfig()
@@ -646,10 +659,12 @@ void UpdateRendererConfig()
     {
         SoftRenderer::SetupRenderThread();
     }
+#ifdef HAVE_OPENGL
     else
     {
         GLRenderer::UpdateDisplaySettings();
     }
+#endif
 }
 
 
@@ -2503,12 +2518,20 @@ void VCount215()
 {
     if (Renderer == 0) SoftRenderer::RenderFrame();
     else               GLRenderer::RenderFrame();
+    if (Renderer == 0) SoftRenderer::RenderFrame();
+#ifdef HAVE_OPENGL
+    else               GLRenderer::RenderFrame();
+#endif
 }
 
 u32* GetLine(int line)
 {
     if (Renderer == 0) return SoftRenderer::GetLine(line);
     else               return GLRenderer::GetLine(line);
+    if (Renderer == 0) return SoftRenderer::GetLine(line);
+#ifdef HAVE_OPENGL
+    else               return GLRenderer::GetLine(line);
+#endif
 }
 
 

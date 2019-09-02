@@ -24,6 +24,12 @@
 #include "SPI.h"
 #include "Platform.h"
 
+#ifdef __LIBRETRO__
+#include "boolean.h"
+#include <streams/file_stream_transforms.h>
+
+extern bool retro_firmware_status;
+#endif
 
 namespace SPI_Firmware
 {
@@ -41,6 +47,8 @@ u8 Data;
 
 u8 StatusReg;
 u32 Addr;
+
+
 
 
 u16 CRC16(u8* data, u32 len, u32 start)
@@ -98,7 +106,6 @@ void Reset()
         // TODO: generate default firmware
         return;
     }
-
     fseek(f, 0, SEEK_END);
 
     FirmwareLength = (u32)ftell(f);

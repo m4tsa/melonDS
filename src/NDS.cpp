@@ -31,6 +31,16 @@
 #include "Wifi.h"
 #include "Platform.h"
 
+#if defined(_WIN32)
+char platformDirSeparator = '\\';
+#else
+char platformDirSeparator = '/';
+#endif
+
+#ifdef __LIBRETRO__
+#include <streams/file_stream_transforms.h>
+extern bool retro_firmware_status;
+#endif
 
 namespace NDS
 {

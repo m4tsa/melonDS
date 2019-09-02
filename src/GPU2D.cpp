@@ -904,6 +904,7 @@ void GPU2D::VBlankEnd()
     OBJMosaicY = 0;
     OBJMosaicYMax = OBJMosaicSize[1];
 
+#ifdef HAVE_OPENGL
     if (Accelerated)
     {
         if ((Num == 0) && (CaptureCnt & (1<<31)) && (((CaptureCnt >> 29) & 0x3) != 1))
@@ -911,6 +912,7 @@ void GPU2D::VBlankEnd()
             GPU3D::GLRenderer::PrepareCaptureFrame();
         }
     }
+#endif
 }
 
 
@@ -1668,7 +1670,7 @@ void GPU2D::DrawBG_Text(u32 line, u32 bgnum)
         tilemapaddr += ((yoff & 0xF8) << 3);
 
     u16 curtile;
-    u16* curpal;
+    u16* curpal = nullptr;
     u32 pixelsaddr;
     u8 color;
 
@@ -2204,6 +2206,8 @@ void GPU2D::DrawSprites(u32 line)
         32, 16, 32, 8,
         64, 32, 64, 8
     };
+
+    u32 nsprites = 0;
 
     for (int bgnum = 0x0C00; bgnum >= 0x0000; bgnum -= 0x0400)
     {

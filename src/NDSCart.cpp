@@ -24,6 +24,11 @@
 #include "CRC32.h"
 #include "Platform.h"
 
+#ifdef __LIBRETRO__
+#include "streams/file_stream_transforms.h"
+#include "streams/memory_stream.h"
+#include "romlist.h"
+#endif
 
 namespace NDSCart_SRAM
 {
@@ -245,6 +250,7 @@ void Write_EEPROM(u8 val, bool islast)
     switch (CurCmd)
     {
     case 0x02:
+    case 0x0A:
         if (DataPos < addrsize)
         {
             Addr <<= 8;
@@ -259,6 +265,7 @@ void Write_EEPROM(u8 val, bool islast)
         break;
 
     case 0x03:
+    case 0x0B:
         if (DataPos < addrsize)
         {
             Addr <<= 8;
@@ -399,7 +406,7 @@ void Write(u8 val, u32 hold)
     switch (CurCmd)
     {
     case 0x00:
-        // Pokémon carts have an IR transceiver thing, and send this
+        // Pokï¿½mon carts have an IR transceiver thing, and send this
         // to bypass it and access SRAM.
         // TODO: design better
         CurCmd = val;
@@ -809,14 +816,25 @@ void ApplyDLDIPatch()
 }
 
 
+#ifdef __LIBRETRO__
+#define fclose(stream) memstream_close(stream)
+#define fread(data, len, count, stream) memstream_read(stream, data, len * count)
+#define fseek(stream, offset, mask) memstream_seek(stream, offset, mask)
+#define ftell(stream) memstream_pos(stream)
+#endif
+
 bool ReadROMParams(u32 gamecode, u32* params)
 {
     // format for romlist.bin:
     // [gamecode] [ROM size] [save type] [reserved]
     // list must be sorted by gamecode
-
+#ifdef __LIBRETRO__
+    memstream_set_buffer((uint8_t*)______romlist_bin, ______romlist_bin_len);
+    memstream_t* f = memstream_open(false);
+#else
     FILE* f = Platform::OpenLocalFile("romlist.bin", "rb");
     if (!f) return false;
+#endif
 
     fseek(f, 0, SEEK_END);
     u32 len = (u32)ftell(f);
@@ -865,6 +883,12 @@ bool ReadROMParams(u32 gamecode, u32* params)
     }
 }
 
+#ifdef __LIBRETRO__
+#define fclose rfclose
+#define fread rfread
+#define fseek rfseek
+#define ftell rftell
+#endif
 
 bool LoadROM(const char* path, const char* sram, bool direct)
 {
