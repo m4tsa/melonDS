@@ -3,6 +3,7 @@ obj
 *.depend
 *.layout
 *.o
+*.so
 melon_grc.c
 melon_grc.h
 cmake-build
